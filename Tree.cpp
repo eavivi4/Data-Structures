@@ -18,12 +18,51 @@ public:
     }
 };
 
-class BinaryTree {
+class Tree {
+protected:
     BinaryNode* root;
 public:
-    BinaryTree() {
+    Tree() {
         root = nullptr;
     }
+
+    void removeWithTwoChild(BinaryNode* curr)
+    {
+        if (!curr)
+        {
+            return;
+        }
+        bool left = false;
+        // Go to leftmost node in right subtree
+        BinaryNode* replacement = curr->right;
+        BinaryNode* p_replace = curr;
+        while (replacement->left != nullptr)
+        {
+            left = true;
+            p_replace = replacement;
+            replacement = replacement->left;
+        }
+        // Put contents of replacement node into 
+        curr->data = replacement->data;
+        
+        if(left)
+        {
+            p_replace->left = nullptr;
+        }
+        else
+        {
+            p_replace->right = nullptr;
+        }
+
+        
+        delete replacement;
+        replacement = nullptr;
+        return;
+    }
+};
+
+class BinaryTree : public Tree {
+public:
 
     void insert(int element) {
         BinaryNode* newNode = new BinaryNode(element);
@@ -68,34 +107,18 @@ public:
     }
 
     void remove(int element) {
+
+        // If no tree, no need to remove
         if (root == nullptr)
         {
-                return;
+            return;
         }
 
         // Base case, if the element is the root
         if (root->data == element)
         {
-            BinaryNode* saveRoot = root;
-            if (root->right == nullptr)
-            {
-                // Right side is empty
-                root = root->left;
-            }
-            else if (root->left == nullptr)
-            {
-                // Left side is empty
-                root = root->right;
-            }
-            
-            // If root has two children
-            BinaryNode* iterate = root;
-            while (iterate->right != nullptr)
-            {
-                iterate = iterate->right;
-            }
-            iterate->right = saveRoot->right;
-            // CONTINUE?
+            // Remove root
+            removeWithTwoChild(root);
             return;
         }
 
@@ -116,11 +139,32 @@ public:
                     BinaryNode* child = curr->left;
                     if(!child->left && !child->right)
                     {
+                        // Remove node with no children
+                        delete child;
+                        curr->left = nullptr;
+                        return;
+                    }
+                    if (!child->left)
+                    {
+                        // Remove node with right child
+                        curr->left = child->right;
                         delete child;
                         return;
                     }
-                    // CONTINUE? with function?
-                    return;
+                    if (!child->right)
+                    {
+                        // Remove node with left child
+                        curr->left = child->left;
+                        delete child;
+                        return;
+                    }
+                    else
+                    {
+                        // Remove node with two children
+                        removeWithTwoChild(child);
+                        return;
+                    }
+                    
                 }
                 q.push(curr->left);
             }
@@ -132,11 +176,31 @@ public:
                     BinaryNode* child = curr->right;
                     if(!child->left && !child->right)
                     {
+                        // Remove node with no children
+                        curr->right = nullptr;
                         delete child;
                         return;
                     }
-                    // CONTINUE? with function?
-                    return;
+                    else if (!child->left)
+                    {
+                        // Remove node with right child
+                        curr->right = child->right;
+                        delete child;
+                        return;
+                    }
+                    else if (!child->right)
+                    {
+                        // Remove node with left child
+                        curr->right = child->left;
+                        delete child;
+                        return;
+                    }
+                    else
+                    {
+                        // Remove node with two children
+                        removeWithTwoChild(child);
+                        return;
+                    }
                 }
                 q.push(curr->right);
             }
@@ -204,12 +268,8 @@ public:
     }
 };
 
-class BinarySearchTree {
-    BinaryNode* root;
+class BinarySearchTree : public Tree {
 public:
-    BinarySearchTree() {
-        root = nullptr;
-    }
 
     void insert(int element) {
         BinaryNode* newNode = new BinaryNode(element);
@@ -247,16 +307,6 @@ public:
         
     }
 
-    void removeWithTwoChild(BinaryNode* curr, BinaryNode* parent)
-    {
-        if (parent == nullptr)
-        {
-            // Remove root
-            //CONINUE?
-            return;
-        }
-    }
-
     void removeCases(char side, BinaryNode* curr, BinaryNode* parent) {
         
         if (curr->right == nullptr)
@@ -290,7 +340,7 @@ public:
         else
         {
             // Two children
-            removeWithTwoChild(curr, parent);
+            removeWithTwoChild(curr);
         }
         return;
     }
@@ -299,7 +349,7 @@ public:
         if (root->data == element)
         {
             // Remove root
-            removeWithTwoChild(root, nullptr);
+            removeWithTwoChild(root);
             return;
         }
         BinaryNode* curr = root;
@@ -321,8 +371,17 @@ public:
         // Remove element by checking which case it is
         if (curr->right == nullptr && curr->left == nullptr)
         {
-            // If not children, delete node
+            // If not children, delete node, NOT DELETING?
+            if(parent->left == curr)
+            {
+                parent->left = nullptr;
+            }
+            else
+            {
+                parent->right = nullptr;
+            }
             delete curr;
+            // cout << "HERE" << curr->data << endl;
         }
         else if (curr == parent->left)
         {
@@ -424,16 +483,47 @@ int main() {
     bintree->insert(11);
     bintree->print();
     // Remove leaf
-    // bintree->remove(11);
-    // // Remove in the middle
-    // bintree->remove(3);
-    // // Remove root
-    // bintree->remove(1);
+    bintree->remove(11);
+    bintree->print();
+    // Remove in the middle
+    bintree->remove(3);
+    bintree->print();
+    // Remove root
+    bintree->remove(1);
+    bintree->print();
+
+    // Remove with one child
+
+    // Left
+    bintree->insert(6);
+    bintree->print();
+    bintree->remove(7);
+    bintree->print();
+
+    // Right (removing 40 to have only one child)
+    bintree->remove(40);
+    bintree->remove(0);
+    bintree->print(); 
 
     // FIX THIS SO IT SAYS TRUE OR FALSE INSTEAD OF 1 OR 0
-    cout << "Eleven is in the tree: " << bintree->lookup(11) << endl;
-    cout << "One is in the tree: " << bintree->lookup(1) << endl;
-    cout << "Four is in the tree: " << bintree->lookup(4) << endl;
+    string b = "false";
+    if (bintree->lookup(11))
+    {
+        b = "true";
+    }
+    cout << "Eleven is in the tree: " <<  b << endl;
+    b = "false";
+    if (bintree->lookup(9))
+    {
+        b = "true";
+    }
+    cout << "Nine is in the tree: " << b << endl;
+    b = "false";
+    if (bintree->lookup(4))
+    {
+        b = "true";
+    }
+    cout << "Four is in the tree: " << b << endl;
 
     cout << "Binary Search Tree: " << endl;
     BinarySearchTree* bstree = new BinarySearchTree();
@@ -454,20 +544,40 @@ int main() {
     bstree->insert(11);
     bstree->print();
     // // Remove leaf
-    // bstree->remove(11);
-    // // Remove in the middle with one leaf
-    // // Left
-    // bstree->remove(7);
-    // // Right
-    // bstree->remove(2);
-    // // Remove in the middle with two leafs
-    // bstree->remove(1);
-    // // Remove root
-    // bstree->remove(9);
+    bstree->remove(11);
+    bstree->print();
+    // Remove in the middle with one leaf
+    // Left
+    bstree->remove(7);
+    bstree->print();
+    // Right
+    bstree->remove(2);
+    bstree->print();
+    // Remove in the middle with two leafs
+    bstree->remove(1);
+    bstree->print();
+    // Remove root
+    bstree->remove(9);
+    bstree->print();
 
-    // FIX THIS SO IT SAYS TRUE OR FALSE INSTEAD OF 1 OR 0
-    cout << "Twelve is in the tree: " << bstree->lookup(12) << endl;
-    cout << "Zero is in the tree: " << bstree->lookup(0) << endl;
-    cout << "Nine is in the tree: " << bstree->lookup(9) << endl;
+    // CHANGE TO FUNCTION?
+    b = "false";
+    if (bstree->lookup(12))
+    {
+        b = "true";
+    }
+    cout << "Twelve is in the tree: " << b << endl;
+    b = "false";
+    if(bstree->lookup(0))
+    {
+        b = "true";
+    }
+    cout << "Zero is in the tree: " << b << endl;
+    b = "false";
+    if(bstree->lookup(9))
+    {
+        b = "true";
+    }
+    cout << "Nine is in the tree: " << b << endl;
     return 0;
 }
