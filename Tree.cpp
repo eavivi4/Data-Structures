@@ -585,7 +585,6 @@ int main() {
     bintree->remove(0);
     bintree->print(); 
 
-    // FIX THIS SO IT SAYS TRUE OR FALSE INSTEAD OF 1 OR 0
     string b = "false";
     if (bintree->lookup(11))
     {
