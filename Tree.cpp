@@ -1,7 +1,6 @@
 #include <iostream>
-
-// Change into my queue later
 #include <queue>
+#include <vector>
 
 using namespace std;
 
@@ -36,6 +35,14 @@ public:
         // Go to leftmost node in right subtree
         BinaryNode* replacement = curr->right;
         BinaryNode* p_replace = curr;
+
+        // Right node is predecessor, save it's right children (not a leaf node)
+        if (replacement->left == nullptr)
+        {
+            curr->data = replacement->data;
+            curr->right = replacement->right;
+            return;
+        }
         while (replacement->left != nullptr)
         {
             left = true;
@@ -455,12 +462,85 @@ public:
     }
 };
 
-class Trie {
-
+class TrieNode {
+public:
+    bool isComplete;
+    TrieNode* children[];
+    TrieNode() {
+        isComplete = false;
+        for (int i = 0; i < 26; i++) {
+            children[i] = nullptr;
+        }
+    }
 };
 
-class BTree {
+class Trie {
+    TrieNode* root;
+public:
+    Trie() {
+        // Not used, just a starting point
+        root = new TrieNode();
+    }
+    void insert(string word) {
+        TrieNode* curr = root;
+        cout << word.size() << endl;
+        for (int i = 0; i < word.size(); i++)
+        {
+            char letter = word[i];
+            // If word is not a child of current, make it
+            if (curr->children[letter - 'a'] == nullptr) {
 
+                //PROBLEM HERE?
+                cout << letter - 'a' << endl;
+                curr->children[letter - 'a'] = new TrieNode();
+                cout << letter - 'a' << endl;
+            }
+            
+            // Move to that child to continue with inserting characters anyways
+            curr = curr->children[letter - 'a'];
+            cout << "YO" << endl;
+        }
+        cout << word.size() << endl;
+        // Set the completion of the word
+        curr->isComplete = true;
+        //NOT RETURNING?
+    }
+
+    bool search(string word) {
+        TrieNode* curr = root;
+        for (int i = 0; i < word.size(); i++)
+        {
+            // If current char does not exist, return false
+            if (!curr->children[word[i] - 'a'])
+            {
+                return false;
+            }
+            // Move to that child to continue with search if the character does exist in Trie
+            curr = curr->children[word[i] - 'a'];
+        }
+        if (curr->isComplete)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    bool startsWith(string prefix) {
+        TrieNode* curr = root;
+        for (int i = 0; i < prefix.size(); i++)
+        {
+            // If current char does not exist, return false
+            if (!curr->children[prefix[i] - 'a'])
+            {
+                return false;
+            }
+            // Move to that child to continue with search if the character does exist in Trie
+            curr = curr->children[prefix[i] - 'a'];
+        }
+        
+        // Does not need to check if char is complete
+        return true;
+    }
 };
 
 int main() {
@@ -579,5 +659,17 @@ int main() {
         b = "true";
     }
     cout << "Nine is in the tree: " << b << endl;
+
+
+    // cout << "Trie: " << endl;
+    // Trie* tr = new Trie();
+    // tr->insert("bpel");
+    // cout << "END" << endl;
+    // trie->search("apple");   // return True
+    // trie->search("app");     // return False
+    // trie->startsWith("app"); // return True
+    // trie->insert("app");
+    // trie->search("app");     // return True
+
     return 0;
 }

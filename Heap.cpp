@@ -35,6 +35,14 @@ public:
         // Go to leftmost node in right subtree
         BinaryHeapNode* replacement = curr->right;
         BinaryHeapNode* p_replace = curr;
+
+        // Right node is predecessor, save it's right children (not a leaf node)
+        if (replacement->left == nullptr)
+        {
+            curr->data = replacement->data;
+            curr->right = replacement->right;
+            return p_replace;
+        }
         while (replacement->left != nullptr)
         {
             left = true;
@@ -87,13 +95,10 @@ public:
 };
 
 class MinHeap : public Heap {
-    BinaryHeapNode* min;
 public:
-    MinHeap() {
-        min = root;
-    }
+    
 
-    void heapSortMin(BinaryHeapNode* curr) {
+    void heapifyMinBottom(BinaryHeapNode* curr) {
         // Start from newly inserted node and bubble up until root to balance
         while (curr->parent != nullptr)
         {
@@ -110,6 +115,42 @@ public:
         
     }
 
+    void heapifyMinTop (BinaryHeapNode* curr)
+    {
+        // Start from root and bubble up the min value to balance removal
+        queue<BinaryHeapNode*> q;
+        q.push(root);
+        while(!q.empty())
+        {
+            BinaryHeapNode* curr = q.front();
+            q.pop();
+            
+            if (curr->left)
+            {
+                if (curr->data > curr->left->data)
+                {
+                    // Bubble up the min value
+                    int temp = curr->data;
+                    curr->data = curr->left->data;
+                    curr->left->data = temp;
+                }
+                q.push(curr->left);
+            }
+            if (curr->right)
+            {
+                if (curr->data > curr->right->data)
+                {
+                    // Bubble up the min value
+                    int temp = curr->data;
+                    curr->data = curr->right->data;
+                    curr->right->data = temp;
+                }
+                q.push(curr->right);
+            }
+        }
+        return;
+    }
+
     void insert(int element) {
         BinaryHeapNode* newNode = new BinaryHeapNode(element);
         if(!root)
@@ -131,7 +172,7 @@ public:
                 // Insert from the left first
                 curr->left = newNode;
                 newNode->parent = curr;
-                heapSortMin(newNode);
+                heapifyMinBottom(newNode);
                 return;
             }
             else if (curr->right == nullptr)
@@ -139,7 +180,7 @@ public:
                 // Insert from the right next
                 curr->right = newNode;
                 newNode->parent = curr;
-                heapSortMin(newNode);
+                heapifyMinBottom(newNode);
                 return;
             }
 
@@ -154,134 +195,130 @@ public:
             }
         }
 
-        heapSortMin(newNode);
+        heapifyMinBottom(newNode);
         return;
 
     }
 
     int getMin() {
-        return min->data;
+        return root->data;
     }
 
-    // void remove(int element) {
+    void remove(int element) {
 
-    //     // If no tree, no need to remove
-    //     if (root == nullptr)
-    //     {
-    //         return;
-    //     }
+        // If no tree, no need to remove
+        if (root == nullptr)
+        {
+            return;
+        }
 
-    //     // Base case, if the element is the root
-    //     if (root->data == element)
-    //     {
-    //         // Remove root
-    //         BinaryHeapNode* balance = removeWithTwoChild(root);
-    //         heapSortMin(balance);
-    //         return;
-    //     }
+        // Base case, if the element is the root
+        if (root->data == element)
+        {
+            // Remove root
+            removeWithTwoChild(root);
+            heapifyMinTop(root);
+            return;
+        }
 
-    //     // Have a queue to keep track of children
-    //     queue<BinaryHeapNode*> q;
-    //     q.push(root);
-    //     while(!q.empty())
-    //     {
-    //         BinaryHeapNode* curr = q.front();
-    //         q.pop();
+        // Have a queue to keep track of children
+        queue<BinaryHeapNode*> q;
+        q.push(root);
+        while(!q.empty())
+        {
+            BinaryHeapNode* curr = q.front();
+            q.pop();
 
-    //         // Traverse until element is found
-    //         if (curr->left != nullptr)
-    //         {
-    //             if (curr->left->data == element)
-    //             {
-    //                 // Remove left child
-    //                 BinaryHeapNode* child = curr->left;
-    //                 if(!child->left && !child->right)
-    //                 {
-    //                     // Remove node with no children
-    //                     delete child;
-    //                     curr->left = nullptr;
-    //                     heapSortMin(curr);
-    //                     return;
-    //                 }
-    //                 else if (!child->left)
-    //                 {
-    //                     // Remove node with right child
-    //                     curr->left = child->right;
-    //                     delete child;
-    //                     heapSortMin(curr);
-    //                     return;
-    //                 }
-    //                 else if (!child->right)
-    //                 {
-    //                     // Remove node with left child
-    //                     curr->left = child->left;
-    //                     delete child;
-    //                     heapSortMin(curr);
-    //                     return;
-    //                 }
-    //                 else
-    //                 {
-    //                     // Remove node with two children
-    //                     removeWithTwoChild(child);
-    //                     heapSortMin(curr);
-    //                     return;
-    //                 }
+            // Traverse until element is found
+            if (curr->left != nullptr)
+            {
+                if (curr->left->data == element)
+                {
+                    // Remove left child
+                    BinaryHeapNode* child = curr->left;
+                    if(!child->left && !child->right)
+                    {
+                        // Remove node with no children
+                        delete child;
+                        curr->left = nullptr;
+                        heapifyMinTop(curr);
+                        return;
+                    }
+                    else if (!child->left)
+                    {
+                        // Remove node with right child
+                        curr->left = child->right;
+                        delete child;
+                        heapifyMinTop(curr);
+                        return;
+                    }
+                    else if (!child->right)
+                    {
+                        // Remove node with left child
+                        curr->left = child->left;
+                        delete child;
+                        heapifyMinTop(curr);
+                        return;
+                    }
+                    else
+                    {
+                        // Remove node with two children
+                        removeWithTwoChild(child);
+                        heapifyMinTop(curr);
+                        return;
+                    }
                     
-    //             }
-    //             q.push(curr->left);
-    //         }
-    //         if (curr->right != nullptr)
-    //         {
-    //             if (curr->right->data == element)
-    //             {
-    //                 // Remove right child
-    //                 BinaryHeapNode* child = curr->right;
-    //                 if(!child->left && !child->right)
-    //                 {
-    //                     // Remove node with no children
-    //                     curr->right = nullptr;
-    //                     delete child;
-    //                     heapSortMin(curr);
-    //                     return;
-    //                 }
-    //                 else if (!child->left)
-    //                 {
-    //                     // Remove node with right child
-    //                     curr->right = child->right;
-    //                     delete child;
-    //                     heapSortMin(curr);
-    //                     return;
-    //                 }
-    //                 else if (!child->right)
-    //                 {
-    //                     // Remove node with left child
-    //                     curr->right = child->left;
-    //                     delete child;
-    //                     heapSortMin(curr);
-    //                     return;
-    //                 }
-    //                 else
-    //                 {
-    //                     // Remove node with two children
-    //                     removeWithTwoChild(child);
-    //                     heapSortMin(curr);
-    //                     return;
-    //                 }
-    //             }
-    //             q.push(curr->right);
-    //         }
-    //     }
-    // }
+                }
+                q.push(curr->left);
+            }
+            if (curr->right != nullptr)
+            {
+                if (curr->right->data == element)
+                {
+                    // Remove right child
+                    BinaryHeapNode* child = curr->right;
+                    if(!child->left && !child->right)
+                    {
+                        // Remove node with no children
+                        curr->right = nullptr;
+                        delete child;
+                        heapifyMinTop(curr);
+                        return;
+                    }
+                    else if (!child->left)
+                    {
+                        // Remove node with right child
+                        curr->right = child->right;
+                        delete child;
+                        heapifyMinTop(curr);
+                        return;
+                    }
+                    else if (!child->right)
+                    {
+                        // Remove node with left child
+                        curr->right = child->left;
+                        delete child;
+                        heapifyMinTop(curr);
+                        return;
+                    }
+                    else
+                    {
+                        // Remove node with two children
+                        removeWithTwoChild(child);
+                        heapifyMinTop(curr);
+                        return;
+                    }
+                }
+                q.push(curr->right);
+            }
+        }
+    }
 };
 
 class MaxHeap : public Heap {
-    BinaryHeapNode* max;
 public:
-    MaxHeap() {
-        max = root;
-    }
 
-    void heapSortMax(BinaryHeapNode* curr) {
+    void heapifyMaxBottom(BinaryHeapNode* curr) {
         // Start from newly inserted node and bubble up until root to balance
         while (curr->parent != nullptr)
         {
@@ -297,6 +334,42 @@ public:
         return;
     }
 
+    void heapifyMaxTop(BinaryHeapNode* curr)
+    {
+        // Start from root and bubble up the max value to balance removal
+        queue<BinaryHeapNode*> q;
+        q.push(root);
+        while(!q.empty())
+        {
+            BinaryHeapNode* curr = q.front();
+            q.pop();
+            
+            if (curr->left)
+            {
+                if (curr->data < curr->left->data)
+                {
+                    // Bubble up the max value
+                    int temp = curr->data;
+                    curr->data = curr->left->data;
+                    curr->left->data = temp;
+                }
+                q.push(curr->left);
+            }
+            if (curr->right)
+            {
+                if (curr->data < curr->right->data)
+                {
+                    // Bubble up the max value
+                    int temp = curr->data;
+                    curr->data = curr->right->data;
+                    curr->right->data = temp;
+                }
+                q.push(curr->right);
+            }
+        }
+        return;
+    }
+
     void insert(int element) {
         BinaryHeapNode* newNode = new BinaryHeapNode(element);
         if(!root)
@@ -318,7 +391,7 @@ public:
                 // Insert from the left first
                 curr->left = newNode;
                 newNode->parent = curr;
-                heapSortMax(newNode);
+                heapifyMaxBottom(newNode);
                 return;
             }
             else if (curr->right == nullptr)
@@ -326,7 +399,7 @@ public:
                 // Insert from the right next
                 curr->right = newNode;
                 newNode->parent = curr;
-                heapSortMax(newNode);
+                heapifyMaxBottom(newNode);
                 return;
             }
 
@@ -341,124 +414,124 @@ public:
             }
         }
 
-        heapSortMax(newNode);
+        heapifyMaxBottom(newNode);
         return;
 
     }
 
     int getMax() {
-        return max->data;
+        return root->data;
     }
     
-    // void remove(int element) {
+    void remove(int element) {
 
-    //     // If no tree, no need to remove
-    //     if (root == nullptr)
-    //     {
-    //         return;
-    //     }
+        // If no tree, no need to remove
+        if (root == nullptr)
+        {
+            return;
+        }
 
-    //     // Base case, if the element is the root
-    //     if (root->data == element)
-    //     {
-    //         // Remove root
-    //         BinaryHeapNode* balance = removeWithTwoChild(root);
-    //         heapSortMax(balance);
-    //         return;
-    //     }
+        // Base case, if the element is the root
+        if (root->data == element)
+        {
+            // Remove root
+            BinaryHeapNode* balance = removeWithTwoChild(root);
+            heapifyMaxTop(balance);
+            return;
+        }
 
-    //     // Have a queue to keep track of children
-    //     queue<BinaryHeapNode*> q;
-    //     q.push(root);
-    //     while(!q.empty())
-    //     {
-    //         BinaryHeapNode* curr = q.front();
-    //         q.pop();
+        // Have a queue to keep track of children
+        queue<BinaryHeapNode*> q;
+        q.push(root);
+        while(!q.empty())
+        {
+            BinaryHeapNode* curr = q.front();
+            q.pop();
 
-    //         // Traverse until element is found
-    //         if (curr->left != nullptr)
-    //         {
-    //             if (curr->left->data == element)
-    //             {
-    //                 // Remove left child
-    //                 BinaryHeapNode* child = curr->left;
-    //                 if(!child->left && !child->right)
-    //                 {
-    //                     // Remove node with no children
-    //                     delete child;
-    //                     curr->left = nullptr;
-    //                     heapSortMax(curr);
-    //                     return;
-    //                 }
-    //                 else if (!child->left)
-    //                 {
-    //                     // Remove node with right child
-    //                     curr->left = child->right;
-    //                     delete child;
-    //                     heapSortMax(curr);
-    //                     return;
-    //                 }
-    //                 else if (!child->right)
-    //                 {
-    //                     // Remove node with left child
-    //                     curr->left = child->left;
-    //                     delete child;
-    //                     heapSortMax(curr);
-    //                     return;
-    //                 }
-    //                 else
-    //                 {
-    //                     // Remove node with two children
-    //                     removeWithTwoChild(child);
-    //                     heapSortMax(curr);
-    //                     return;
-    //                 }
+            // Traverse until element is found
+            if (curr->left != nullptr)
+            {
+                if (curr->left->data == element)
+                {
+                    // Remove left child
+                    BinaryHeapNode* child = curr->left;
+                    if(!child->left && !child->right)
+                    {
+                        // Remove node with no children
+                        delete child;
+                        curr->left = nullptr;
+                        heapifyMaxTop(curr);
+                        return;
+                    }
+                    else if (!child->left)
+                    {
+                        // Remove node with right child
+                        curr->left = child->right;
+                        delete child;
+                        heapifyMaxTop(curr);
+                        return;
+                    }
+                    else if (!child->right)
+                    {
+                        // Remove node with left child
+                        curr->left = child->left;
+                        delete child;
+                        heapifyMaxTop(curr);
+                        return;
+                    }
+                    else
+                    {
+                        // Remove node with two children
+                        removeWithTwoChild(child);
+                        heapifyMaxTop(curr);
+                        return;
+                    }
                     
-    //             }
-    //             q.push(curr->left);
-    //         }
-    //         if (curr->right != nullptr)
-    //         {
-    //             if (curr->right->data == element)
-    //             {
-    //                 // Remove right child
-    //                 BinaryHeapNode* child = curr->right;
-    //                 if(!child->left && !child->right)
-    //                 {
-    //                     // Remove node with no children
-    //                     curr->right = nullptr;
-    //                     delete child;
-    //                     heapSortMax(curr);
-    //                     return;
-    //                 }
-    //                 else if (!child->left)
-    //                 {
-    //                     // Remove node with right child
-    //                     curr->right = child->right;
-    //                     delete child;
-    //                     heapSortMax(curr);
-    //                     return;
-    //                 }
-    //                 else if (!child->right)
-    //                 {
-    //                     // Remove node with left child
-    //                     curr->right = child->left;
-    //                     delete child;
-    //                     heapSortMax(curr);
-    //                     return;
-    //                 }
-    //                 else
-    //                 {
-    //                     // Remove node with two children
-    //                     removeWithTwoChild(child);
-    //                     heapSortMax(curr);
-    //                     return;
-    //                 }
-    //             }
-    //             q.push(curr->right);
-    //         }
-    //     }
-    // }
+                }
+                q.push(curr->left);
+            }
+            if (curr->right != nullptr)
+            {
+                if (curr->right->data == element)
+                {
+                    // Remove right child
+                    BinaryHeapNode* child = curr->right;
+                    if(!child->left && !child->right)
+                    {
+                        // Remove node with no children
+                        curr->right = nullptr;
+                        delete child;
+                        heapifyMaxTop(curr);
+                        return;
+                    }
+                    else if (!child->left)
+                    {
+                        // Remove node with right child
+                        curr->right = child->right;
+                        delete child;
+                        heapifyMaxTop(curr);
+                        return;
+                    }
+                    else if (!child->right)
+                    {
+                        // Remove node with left child
+                        curr->right = child->left;
+                        delete child;
+                        heapifyMaxTop(curr);
+                        return;
+                    }
+                    else
+                    {
+                        // Remove node with two children
+                        removeWithTwoChild(child);
+                        heapifyMaxTop(curr);
+                        return;
+                    }
+                }
+                q.push(curr->right);
+            }
+        }
+    }
 };
 
 int main() {
@@ -481,8 +554,18 @@ int main() {
     minh->insert(11);
     minh->print();
     // Remove min
-    // minh->remove(0);
-
+    minh->remove(0);
+    minh->print();
+    // Remove min again
+    minh->remove(1);
+    minh->print();
+    // Remove middle node
+    minh->remove(3);
+    minh->print();
+    // Remove leaf
+    minh->remove(40);
+    minh->print();
+    cout << "Min: " << minh->getMin() << endl;
 
     cout << "Max Heap: " << endl;
     MaxHeap* maxh = new MaxHeap();
@@ -502,5 +585,17 @@ int main() {
     maxh->print();
     maxh->insert(11);
     maxh->print();
+
+    // // Remove root
+    maxh->remove(40);
+    maxh->print();
+    // // Remove middle element
+    maxh->remove(7);
+    maxh->print();
+    // // Remove leaf
+    maxh->remove(0);
+    maxh->print();
+
+    cout << "Max: " << maxh->getMax() << endl;
     return 0;
 }
