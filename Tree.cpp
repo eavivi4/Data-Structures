@@ -1,6 +1,6 @@
 #include <iostream>
 #include <queue>
-#include <vector>
+#include <map>
 
 using namespace std;
 
@@ -465,12 +465,13 @@ public:
 class TrieNode {
 public:
     bool isComplete;
-    TrieNode* children[];
+    map <char, TrieNode*> children;
     TrieNode() {
         isComplete = false;
-        for (int i = 0; i < 26; i++) {
-            children[i] = nullptr;
-        }
+
+        // for (int i = 0; i < 26; i++) {
+        //     children[i] = nullptr;
+        // }
     }
 };
 
@@ -483,26 +484,29 @@ public:
     }
     void insert(string word) {
         TrieNode* curr = root;
-        cout << word.size() << endl;
+        // cout << "word: " << word << endl;
+        // cout << "size: " << word.size() << endl;
         for (int i = 0; i < word.size(); i++)
         {
+            // cout << "index: " << i << endl;
             char letter = word[i];
             // If word is not a child of current, make it
-            if (curr->children[letter - 'a'] == nullptr) {
+            if (curr->children[letter] == nullptr) {
 
                 //PROBLEM HERE?
-                cout << letter - 'a' << endl;
-                curr->children[letter - 'a'] = new TrieNode();
-                cout << letter - 'a' << endl;
+                // cout << "word index: " <<  letter  << endl;
+                curr->children[letter] = new TrieNode();
+                // cout << "word index2: " << letter << endl;
             }
             
             // Move to that child to continue with inserting characters anyways
-            curr = curr->children[letter - 'a'];
-            cout << "YO" << endl;
+            curr = curr->children[letter];
+            // cout << "YO" << endl;
         }
-        cout << word.size() << endl;
+        // cout << "size2: " << word.size() << endl;
         // Set the completion of the word
         curr->isComplete = true;
+        return;
         //NOT RETURNING?
     }
 
@@ -511,12 +515,12 @@ public:
         for (int i = 0; i < word.size(); i++)
         {
             // If current char does not exist, return false
-            if (!curr->children[word[i] - 'a'])
+            if (!curr->children[word[i]])
             {
                 return false;
             }
             // Move to that child to continue with search if the character does exist in Trie
-            curr = curr->children[word[i] - 'a'];
+            curr = curr->children[word[i]];
         }
         if (curr->isComplete)
         {
@@ -530,12 +534,12 @@ public:
         for (int i = 0; i < prefix.size(); i++)
         {
             // If current char does not exist, return false
-            if (!curr->children[prefix[i] - 'a'])
+            if (!curr->children[prefix[i]])
             {
                 return false;
             }
             // Move to that child to continue with search if the character does exist in Trie
-            curr = curr->children[prefix[i] - 'a'];
+            curr = curr->children[prefix[i]];
         }
         
         // Does not need to check if char is complete
@@ -660,15 +664,34 @@ int main() {
     cout << "Nine is in the tree: " << b << endl;
 
 
-    // cout << "Trie: " << endl;
-    // Trie* tr = new Trie();
-    // tr->insert("bpel");
-    // cout << "END" << endl;
-    // trie->search("apple");   // return True
-    // trie->search("app");     // return False
-    // trie->startsWith("app"); // return True
-    // trie->insert("app");
-    // trie->search("app");     // return True
+    cout << "Trie: " << endl;
+    Trie* tr = new Trie();
+    cout << "Inserting the word apple into the trie" << endl;
+    tr->insert("apple");
+    if (tr->search("apple"))
+    {
+        b = "true";
+    }
+    cout << "The word apple is in the trie: " << b << endl;   
+    b = "false";
+    if (tr->search("app"))
+    {
+        b = "true";
+    }
+    cout << "The word app is in the trie: " << b << endl;     
+    b = "false";
+    if (tr->startsWith("app"))
+    {
+        b = "true";
+    }
+    cout << "A word starting with app is in the trie: " << b << endl;
+    cout << "Inserting the word app into the trie" << endl;
+    if (tr->search("app"))
+    {
+        b = "true";
+    }
+    tr->insert("app");
+    cout << "The word app is in the trie: " << b << endl;  
 
     return 0;
 }
