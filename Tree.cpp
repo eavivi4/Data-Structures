@@ -468,10 +468,6 @@ public:
     map <char, TrieNode*> children;
     TrieNode() {
         isComplete = false;
-
-        // for (int i = 0; i < 26; i++) {
-        //     children[i] = nullptr;
-        // }
     }
 };
 
@@ -484,30 +480,21 @@ public:
     }
     void insert(string word) {
         TrieNode* curr = root;
-        // cout << "word: " << word << endl;
-        // cout << "size: " << word.size() << endl;
         for (int i = 0; i < word.size(); i++)
         {
-            // cout << "index: " << i << endl;
             char letter = word[i];
             // If word is not a child of current, make it
             if (curr->children[letter] == nullptr) {
 
-                //PROBLEM HERE?
-                // cout << "word index: " <<  letter  << endl;
                 curr->children[letter] = new TrieNode();
-                // cout << "word index2: " << letter << endl;
             }
             
             // Move to that child to continue with inserting characters anyways
             curr = curr->children[letter];
-            // cout << "YO" << endl;
         }
-        // cout << "size2: " << word.size() << endl;
         // Set the completion of the word
         curr->isComplete = true;
         return;
-        //NOT RETURNING?
     }
 
     bool search(string word) {
