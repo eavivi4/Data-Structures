@@ -1,13 +1,15 @@
 #include <iostream>
 #include <vector>
+#include <stack>
+#include <queue>
 
 using namespace std;
 
-
 class Matrix {
     int numVert;
-    vector<vector<int>> matrix;;
+    
 public:
+    vector<vector<int>> matrix;
     Matrix(int n) {
         // Vertex by vertex matrix
         numVert = n;
@@ -26,7 +28,6 @@ public:
     void AddEdge(int a, int b) {
         // -1 because zero indexed
         matrix[a-1][b-1] = 1;
-        matrix[b-1][a-1] = 1;
         return;
     }
 
@@ -46,12 +47,15 @@ public:
         return;
     }
 
+    int GetSize() {
+        return numVert;
+    }
 };
 
 class Vertex {
     int data;
-    vector<int> adj;
 public: 
+    vector<int> adj;
     Vertex(int d) {
         data = d;
     }
@@ -90,9 +94,9 @@ public:
 };
 
 class AdjacencyList {
+public:
     // List of vertex objects
     vector<Vertex*> adjlist;
-public:
 
     void AddVertex(int a) {
         // Add vertex into adjacency list
@@ -102,20 +106,24 @@ public:
     }
 
     void AddEdge(int a, int b) {
+        FindVert(a)->AddEdge(b);
+        return;
+    }
+
+    Vertex* FindVert(int a) {
         for (int i = 0; i < adjlist.size(); i++)
         {
-            // Find data in adjacency list and set the other vertex as an edge
+            // Find data in vertex list
             if(adjlist[i]->getData() == a)
             {
-                adjlist[i]->AddEdge(b);
-            }
-            // Add for both vertices because undirected graph
-            else if(adjlist[i]->getData() == b)
-            {
-                adjlist[i]->AddEdge(a);
+                return adjlist[i];
             }
         }
-        return;
+        return nullptr;
+    }
+
+    int getSize() {
+        return adjlist.size();
     }
 
     void PrintAdj() {
@@ -130,13 +138,9 @@ public:
 
     bool VertexExist(int a)
     {
-        for (int i = 0; i < adjlist.size(); i++)
+        if (FindVert(a))
         {
-            // Find data in vertex list
-            if(adjlist[i]->getData() == a)
-            {
-                return true;
-            }
+            return true;
         }
         return false;
     }
@@ -147,29 +151,102 @@ public:
             // If one vertex is not in list
             return false;
         }
-        for (int i = 0; i < adjlist.size(); i++)
-        {
-            // Find data in vertex list
-            if(adjlist[i]->getData() == a)
-            {
-                return adjlist[i]->EdgeSearch(b);
-            }
-        }
-        return false;
+        return FindVert(a)->EdgeSearch(b);
     }
+
+    
 };
 
-void BFS() {
+void BFSMat(Matrix* m, int a, int b) {
+    // Breath First Search for Matrix
+    // Queue
+    // Shortest path
+    queue<int> q;
+    vector<bool> visited(m->GetSize(), false);
+    q.push(a);
+    visited[a-1] = true;
+    while(!q.empty())
+    {
+        int curr = q.front();
+        q.pop();
+        cout << curr << ": ";
+        
+        for (int i = 0; i < m->GetSize(); i++)
+        {
+            
+            if (m->matrix[curr-1][i] && i+1 == b) {
+                cout << i+1 << endl;
+                return;
+            }
+            else if (!visited[i+1] && m->matrix[curr-1][i])
+            {
+                q.push(i+1);
+                cout << i+1 << " ";
+                visited[i+1] = true;
+            }
+        }
+        cout << endl;
+    }
+    return;
 
 }
 
-void DFS() {
-    
+void BFSAdj(AdjacencyList* list, int a, int b) {
+    // Breath First Search for Adjacency List
+    // Queue
+    // Shortest path
+    queue<Vertex*> q;
+    vector<bool> visited(list->getSize(), false);
+    Vertex* start = list->FindVert(a);
+    q.push(start);
+    visited[start->getData()] = true;
+    while(!q.empty())
+    {
+        Vertex* curr = q.front();
+        q.pop();
+        cout << curr->getData() << ": ";
+        if (curr->EdgeSearch(b)) {
+            cout << b << endl;
+            return;
+        }
+        else 
+        {
+            for (int j = 0; j < curr->adj.size(); j++)
+            {
+                int element = curr->adj[j];
+                if (!visited[element])
+                {
+                    q.push(list->FindVert(element));
+                    cout << element << " ";
+                    visited[element] = true;
+                }
+            }
+            
+            
+        }
+        cout << endl;
+    }
+    return;
+}
+
+void DFSMat(Matrix* matrix, int a, int b) {
+    // Depth First Search for Matrix
+    // Stack
+    // Path exists
+    stack<int> s;
+
+}
+
+void DFSAdj(AdjacencyList* adj, int a, int b) {
+    // Depth First Search for Adjacency list
+    // Stack
+    // Path exists
+    stack<Vertex*> s;
 }
 
 int main() {
 
-    // Undirected Graphs
+    // Directed Graphs
 
     cout << "Matrix: " << endl;
     Matrix* m = new Matrix(5);
@@ -179,6 +256,7 @@ int main() {
     m->AddEdge(4,4);
     m->AddEdge(5,1);
     m->AddEdge(3,5);
+    m->AddEdge(2,5);
     m->PrintMat();
     string b = "false";
     if (m->EdgeExist(1,3))
@@ -193,6 +271,9 @@ int main() {
     }
     cout << "Edge exists between 2 to 3: " << b << endl;
 
+    cout << "BFS Matrix: " << endl;
+    BFSMat(m, 1, 5);
+
     cout << "Adjacency list: " << endl;
     AdjacencyList* a = new AdjacencyList();
     a->AddVertex(1);
@@ -206,6 +287,7 @@ int main() {
     a->AddEdge(4,4);
     a->AddEdge(5,1);
     a->AddEdge(3,5);
+    a->AddEdge(2,5);
     a->PrintAdj();
     b = "false";
     if (a->EdgeExist(1,3))
@@ -220,5 +302,8 @@ int main() {
     }
     cout << "Edge exists between 2 to 3: " << b << endl;
     
+    cout << "BFS Adjacency List: " << endl;
+    BFSAdj(a, 1, 5);
+
     return 0;
 }
