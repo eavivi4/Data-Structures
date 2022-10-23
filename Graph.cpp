@@ -229,19 +229,74 @@ void BFSAdj(AdjacencyList* list, int a, int b) {
     return;
 }
 
-void DFSMat(Matrix* matrix, int a, int b) {
+bool DFSMat(Matrix* m, int a, int b) {
     // Depth First Search for Matrix
     // Stack
     // Path exists
     stack<int> s;
-
+    vector<bool> visited(m->GetSize(), false);
+    s.push(a);
+    while(!s.empty())
+    {
+        int curr = s.top();
+        s.pop();
+        cout << curr << ": ";
+        
+        for (int i = 0; i < m->GetSize(); i++)
+        {
+            
+            if (m->matrix[curr-1][i] && i+1 == b) {
+                cout << i+1 << endl;
+                return true;
+            }
+            else if (!visited[i+1] && m->matrix[curr-1][i])
+            {
+                s.push(i+1);
+                cout << i+1 << " ";
+                visited[i+1] = true;
+            }
+        }
+        cout << endl;
+    }
+    return false;
 }
 
-void DFSAdj(AdjacencyList* adj, int a, int b) {
+bool DFSAdj(AdjacencyList* list, int a, int b) {
     // Depth First Search for Adjacency list
     // Stack
     // Path exists
     stack<Vertex*> s;
+    vector<bool> visited(list->getSize(), false);
+    Vertex* start = list->FindVert(a);
+    s.push(start);
+    visited[start->getData()] = true;
+    while(!s.empty())
+    {
+        Vertex* curr = s.top();
+        s.pop();
+        cout << curr->getData() << ": ";
+        if (curr->EdgeSearch(b)) {
+            cout << b << endl;
+            return true;
+        }
+        else 
+        {
+            for (int j = 0; j < curr->adj.size(); j++)
+            {
+                int element = curr->adj[j];
+                if (!visited[element])
+                {
+                    s.push(list->FindVert(element));
+                    cout << element << " ";
+                    visited[element] = true;
+                }
+            }
+            
+            
+        }
+        cout << endl;
+    }
+    return false;
 }
 
 int main() {
@@ -272,7 +327,21 @@ int main() {
     cout << "Edge exists between 2 to 3: " << b << endl;
 
     cout << "BFS Matrix: " << endl;
+    cout << "The shorest path from 1 to 5 is " << endl;
     BFSMat(m, 1, 5);
+    cout << "DFS Matrix: " << endl;
+    b = "false";
+    if (DFSMat(m, 1, 5))
+    {
+        b = "true";
+    }
+    cout << "There is a path from 1 to 5: " << b << endl;
+    b = "false";
+    if (DFSMat(m, 2, 4))
+    {
+        b = "true";
+    }
+    cout << "There is a path from 2 to 4: " << b << endl;
 
     cout << "Adjacency list: " << endl;
     AdjacencyList* a = new AdjacencyList();
@@ -303,7 +372,20 @@ int main() {
     cout << "Edge exists between 2 to 3: " << b << endl;
     
     cout << "BFS Adjacency List: " << endl;
+    cout << "The shorest path from 1 to 5 is " << endl;
     BFSAdj(a, 1, 5);
-
+    cout << "DFS Matrix: " << endl;
+    b = "false";
+    if (DFSAdj(a, 1, 5))
+    {
+        b = "true";
+    }
+    cout << "There is a path from 1 to 5: " << b << endl;
+    b = "false";
+    if (DFSAdj(a, 2, 4))
+    {
+        b = "true";
+    }
+    cout << "There is a path from 2 to 4: " << b << endl;
     return 0;
 }
