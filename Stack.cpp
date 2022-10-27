@@ -46,6 +46,7 @@ public:
             // List is empty
             return;
         }
+        // Save node before changing pointer, to delete it later
         Node* curr = top;
         top = curr->next;
         delete curr;

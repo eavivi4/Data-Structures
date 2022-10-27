@@ -388,7 +388,6 @@ public:
                 parent->right = nullptr;
             }
             delete curr;
-            // cout << "HERE" << curr->data << endl;
         }
         else if (curr == parent->left)
         {
@@ -630,7 +629,6 @@ int main() {
     bstree->remove(9);
     bstree->print();
 
-    // CHANGE TO FUNCTION?
     b = "false";
     if (bstree->lookup(12))
     {

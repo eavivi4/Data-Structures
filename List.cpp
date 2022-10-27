@@ -207,6 +207,8 @@ public:
     }
 
     void printReverse() {
+
+        // Start from end and go until the head
         cout << "<- " << tail->data;
         DoublyNode* curr = tail;
         while (curr != head)

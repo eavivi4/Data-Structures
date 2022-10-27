@@ -57,6 +57,8 @@ public:
             // List is empty
             return;
         }
+
+        // Save node before changing pointer, to delete it later
         Node* curr = front;
         front = curr->next;
         delete curr;
@@ -159,6 +161,7 @@ public:
             // List is empty
             return;
         }
+        // Save node before changing pointer, to delete it later
         PriorityNode* curr = front;
         front = curr->next;
         delete curr;

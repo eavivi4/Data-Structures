@@ -7,12 +7,12 @@ using namespace std;
 
 class Matrix {
     int numVert;
-    
 public:
     vector<vector<int>> matrix;
     Matrix(int n) {
         // Vertex by vertex matrix
         numVert = n;
+        // Fill matrix with 0's
         for (int i = 0; i < numVert; i++)
         {
             vector<int> ver;
@@ -32,6 +32,7 @@ public:
     }
 
     bool EdgeExist(int a, int b) {
+        // Check if edge exists in list
         return matrix[a-1][b-1];
     }
 
@@ -136,8 +137,8 @@ public:
         return;
     }
 
-    bool VertexExist(int a)
-    {
+    bool VertexExist(int a) {
+        // Check if vertex exists in the list
         if (FindVert(a))
         {
             return true;
